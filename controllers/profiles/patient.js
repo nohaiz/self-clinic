@@ -1,6 +1,7 @@
 // IMPORTED MODULES
 const express = require("express");
 const router = express.Router();
+const User = require("../../models/user");
 
 // MODELS
 const Patient = require("../../models/patient");
@@ -52,6 +53,7 @@ router.put("/:userId/patients/:id", async (req, res) => {
 router.delete("/:userId/patients/:id", async (req, res) => {
   try {
     const patient = await Patient.findByIdAndDelete(req.params.id);
+    const user = await User.findByIdAndDelete(req.params.userId);
     res.json({ message: "Patient Deleted" }, patient);
   } catch (error) {
     res.status(404).json({ error: error.message });
