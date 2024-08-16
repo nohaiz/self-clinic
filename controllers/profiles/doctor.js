@@ -62,12 +62,16 @@ router.put("/:userId/doctors/:id", async (req, res) => {
 
 // DELETE DOCTOR
 router.delete("/:userId/doctors/:id", async (req, res) => {
-  try {
-    const doctor = await Doctor.findByIdAndDelete(req.params.id);
-    const user = await User.findByIdAndDelete(req.params.userId);
-    res.json({ message: "Doctor Deleted" }, doctor);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  if (req.user.type[2000]) {
+    try {
+      const doctor = await Doctor.findByIdAndDelete(req.params.id);
+      const user = await User.findByIdAndDelete(req.params.userId);
+      res.json({ message: "Doctor Deleted" }, doctor);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
+  } else {
+    res.status(404).json({ error: "Oops, something went wrong" });
   }
 });
 
