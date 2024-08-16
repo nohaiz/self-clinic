@@ -8,6 +8,22 @@ const Doctor = require("../../models/doctor");
 
 // VIEW ALL DOCTORS
 
+router.get("/:userId/doctors", async (req, res) => {
+  if (req.user.type[2000]) {
+    try {
+      const doctors = await Doctor.find({});
+
+      res.json(doctors);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
+  } else {
+    res.status(404).json({ error: "Oops, something went wrong" });
+  }
+});
+
+// Create Doctor
+
 router.post("/:userId/doctors", async (req, res) => {
   try {
     if (!req.user.type[2000]) {
@@ -20,20 +36,6 @@ router.post("/:userId/doctors", async (req, res) => {
     res.json({ message: "Doctor created", doctor: newDoctor });
   } catch (error) {
     res.status(400).json({ error: error.message });
-  }
-});
-
-router.get("/:userId/doctors", async (req, res) => {
-  if (req.user.type[2000]) {
-    try {
-      const doctors = await Doctor.find({});
-
-      res.json(doctors);
-    } catch (error) {
-      res.status(404).json({ error: error.message });
-    }
-  } else {
-    res.status(404).json({ error: "Oops, something went wrong" });
   }
 });
 
