@@ -18,7 +18,9 @@ const port = process.env.PORT ? process.env.PORT : "3000";
 
 // CONTROLLERS
 const usersRouter = require("./controllers/users.js");
-const profileRouter = require("./controllers/profile.js");
+const adminRouter = require("./controllers/profiles/admin.js");
+const doctorRouter = require("./controllers/profiles/doctor.js");
+const patientRouter = require("./controllers/profiles/patient.js");
 
 // MIDDLEWARE
 
@@ -29,7 +31,9 @@ app.use(verifyToken);
 
 // ROUTES
 app.use("/users", usersRouter);
-app.use("/users", profileRouter);
+app.use("/users", adminRouter);
+app.use("/users", patientRouter);
+app.use("/users", doctorRouter);
 
 app.listen(port, () => {
   console.log("The express app is ready!");
