@@ -51,7 +51,7 @@ router.post("/:userId/admins", async (req, res) => {
   }
 });
 
-// VIEW DOCTOR
+// VIEW ADIM
 
 router.get("/:userId/admins/:id", async (req, res) => {
   try {
@@ -63,7 +63,7 @@ router.get("/:userId/admins/:id", async (req, res) => {
   }
 });
 
-// UPDATE DOCTOR
+// UPDATE ADMIN
 
 router.put("/:userId/admins/:id", async (req, res) => {
   try {
@@ -76,7 +76,7 @@ router.put("/:userId/admins/:id", async (req, res) => {
   }
 });
 
-// DELETE DOCTOR
+// DELETE ADMIN
 
 router.delete("/:userId/admins/:id", async (req, res) => {
   try {
