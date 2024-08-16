@@ -1,11 +1,27 @@
 // IMPORTED MODULES
 const express = require("express");
 const router = express.Router();
+const User = require("../../models/user");
 
 //MODELS
 const Doctor = require("../../models/doctor");
 
 // VIEW ALL DOCTORS
+
+router.post("/:userId/doctors", async (req, res) => {
+  try {
+    if (!req.user.type[2000]) {
+      return res.status(403).json({ error: " Something wen't wrong" });
+    }
+
+    const newDoctor = new Doctor(req.body);
+    await newDoctor.save();
+
+    res.json({ message: "Doctor created", doctor: newDoctor });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 router.get("/:userId/doctors", async (req, res) => {
   if (req.user.type[2000]) {
@@ -48,6 +64,7 @@ router.put("/:userId/doctors/:id", async (req, res) => {
 router.delete("/:userId/doctors/:id", async (req, res) => {
   try {
     const doctor = await Doctor.findByIdAndDelete(req.params.id);
+    const user = await User.findByIdAndDelete(req.params.userId);
     res.json({ message: "Doctor Deleted" }, doctor);
   } catch (error) {
     res.status(404).json({ error: error.message });
