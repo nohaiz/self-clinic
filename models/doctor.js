@@ -9,6 +9,11 @@ const doctorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  CPR: {
+    type: Number,
+    required: true,
+    unique: true,
+  },
   gender: {
     type: String,
     enum: ["male", "female"],
@@ -49,6 +54,11 @@ const doctorSchema = new mongoose.Schema({
       },
     },
   ],
+  service: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }
+
 });
 const Doctor = mongoose.model("Doctor", doctorSchema);
 

@@ -54,7 +54,7 @@ router.post("/sign-up", async (req, res) => {
 
     // CREATE A DEFAULT USER WITH HASHED PASSWORD
     const patientUser = await Patient.create(
-      ({ firstName, lastName, gender, DOB, contactNumber } = req.body)
+      ({ firstName, lastName, gender, DOB, contactNumber, CPR } = req.body)
     );
     payLoad.patientAct = patientUser._id;
     // CONDITIONALLY CREATES OR UPDATES USERS DATA
