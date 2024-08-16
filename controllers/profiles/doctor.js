@@ -24,18 +24,58 @@ router.get("/:userId/doctors", async (req, res) => {
 
 // Create Doctor
 
+// router.post("/:userId/doctors", async (req, res) => {
+//   try {
+//     if (!req.user.type[2000]) {
+//       return res.status(403).json({ error: " Something wen't wrong" });
+//     }
+
+//     const newDoctor = new Doctor(req.body);
+//     await newDoctor.save();
+
+//     res.json({ message: "Doctor created", doctor: newDoctor });
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// });
+
 router.post("/:userId/doctors", async (req, res) => {
-  try {
-    if (!req.user.type[2000]) {
-      return res.status(403).json({ error: " Something wen't wrong" });
+  if (req.user.type[2000]) {
+    const {
+      firstName,
+      lastName,
+      contactNumber,
+      specialization,
+      gender,
+      availability,
+    } = req.body;
+    try {
+      const newDoctor = new Doctor({
+        firstName,
+        lastName,
+        contactNumber,
+        specialization,
+        gender,
+        availability,
+      });
+      await newDoctor.save();
+      let payLoad = {
+        email: req.body.email,
+        hashedPassword: bcrypt.hashSync(
+          req.body.password,
+          parseInt(process.env.SALT_ROUNDS)
+        ),
+        docAct: newDoctor._id,
+      };
+      const newUser = new User(payLoad);
+      await newUser.save();
+
+      res.json({ message: "Doctor created", doctor: newDoctor });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
     }
-
-    const newDoctor = new Doctor(req.body);
-    await newDoctor.save();
-
-    res.json({ message: "Doctor created", doctor: newDoctor });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  } else {
+    res.status(404).json({ error: "Oops, something went wrong" });
   }
 });
 
