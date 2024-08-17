@@ -16,30 +16,51 @@ const createToken = require("../helper/createToken.js");
 
 router.post("/sign-up", async (req, res) => {
   try {
-    // CHECK IF THE USER EXIST
+    // CHECK IF THE USER EXISTS
     const userInDatabase = await User.findOne({ email: req.body.email });
-    // CHECKS IF THE USER EXIST AND IS A PATIENT
 
     let setAccount = false;
 
     if (userInDatabase) {
       if (userInDatabase.patientAct) {
         return res.status(400).json({ error: "Username already taken" });
-      } else {
-        // CHECKS IF THE REQ BODY MATCHES THE EXISTING RESPECTIVE COLLECTION
-        // let validUserEntry;
+      } else if (userInDatabase.docAct || userInDatabase.adminAct) {
+        // Finds the existing doctor and admin
+        const existingDoctor = await Doctor.findById(userInDatabase.docAct);
+        const existingAdmin = await Admin.findById(userInDatabase.adminAct);
 
-        // validUserEntry = await userInDatabase.populate();
-        // const type =
-        //   validUserEntry.docAct !== null && validUserEntry.docAct !== undefined
-        //     ? validUserEntry.docAct
-        //     : validUserEntry.adminAct;
+        if (!existingAdmin && !existingDoctor) {
+          setAccount = true;
+        }
 
-        // console.log(type);
-
-        setAccount = true;
+        // Checks if existing doctor data matches the new data
+        if (userInDatabase.docAct) {
+          if (
+            existingDoctor.firstName !== req.body.firstName ||
+            existingDoctor.lastName !== req.body.lastName ||
+            existingDoctor.CPR !== req.body.CPR ||
+            existingDoctor.gender !== req.body.gender
+          ) {
+            return res
+              .status(400)
+              .json({ error: "Existing data doesn't match" });
+          }
+        }
+        // Checks if existing admin data matches the new data
+        else if (userInDatabase.adminAct) {
+          if (
+            existingAdmin.firstName !== req.body.firstName ||
+            existingAdmin.lastName !== req.body.lastName ||
+            existingAdmin.CPR !== req.body.CPR
+          ) {
+            return res
+              .status(400)
+              .json({ error: "Existing data doesn't match" });
+          }
+        }
       }
     }
+
     // USER PAYLOAD
     let payLoad = {
       email: req.body.email,
@@ -53,11 +74,17 @@ router.post("/sign-up", async (req, res) => {
     };
 
     // CREATE A DEFAULT USER WITH HASHED PASSWORD
-    const patientUser = await Patient.create(
-      ({ firstName, lastName, CPR, gender, DOB, contactNumber } = req.body)
-    );
+    const patientUser = await Patient.create({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      CPR: req.body.CPR,
+      gender: req.body.gender,
+      DOB: req.body.DOB,
+      contactNumber: req.body.contactNumber,
+    });
     payLoad.patientAct = patientUser._id;
-    // CONDITIONALLY CREATES OR UPDATES USERS DATA
+
+    // CONDITIONALLY CREATES OR UPDATES USER DATA
     let user;
     if (payLoad.docAct) {
       try {
@@ -82,8 +109,8 @@ router.post("/sign-up", async (req, res) => {
     } else {
       user = await User.create(payLoad);
     }
-    const token = createToken(user);
 
+    const token = createToken(user);
     res.status(201).json({ user, token });
   } catch (error) {
     res.status(400).json({ error: error.message });

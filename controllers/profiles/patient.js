@@ -41,16 +41,34 @@ router.get("/:userId/patients/:id", async (req, res) => {
 });
 
 // UPDATE PATIENT
-
 router.put("/:userId/patients/:id", async (req, res) => {
   try {
-    const patient = await Patient.findByIdAndUpdate(req.params.id, req.body, {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    if (updateData.CPR) {
+      await Patient.findById(id);
+
+      const existingPatient = await Patient.findOne({
+        CPR: updateData.CPR,
+        _id: { $ne: id },
+      });
+    }
+
+    const updatedPatient = await Patient.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     });
-    res.json({ message: "Patient Updated" }, patient);
+
+    if (!updatedPatient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    // Respond with the updated patient data
+    res.json({ message: "Patient Updated", patient: updatedPatient });
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    // Handle errors
+    res.status(500).json({ error: error.message });
   }
 });
 
