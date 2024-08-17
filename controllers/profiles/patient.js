@@ -33,8 +33,8 @@ router.get("/:userId/patients", async (req, res) => {
 // VIEW PATIENT
 
 router.get("/:userId/patients/:id", async (req, res) => {
-  req.user.type[3000]
-    ? req.user.type[3000]
+  req.user.type[3000] || req.user.type[5000]
+    ? req.user.type
     : res.status(404).json({ error: "Oops, something went wrong" });
 
   if (
@@ -106,11 +106,11 @@ router.put("/:userId/patients/:id", async (req, res) => {
 // DELETE PATIENT
 
 router.delete("/:userId/patients/:id", async (req, res) => {
-  req.user.type[5000]
-    ? req.user.type[5000]
+  req.user.type[3000] || req.user.type[2000]
+    ? req.user.type
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  if (req.user.type[5000]) {
+  if (req.user.type[3000] || req.user.type[2000]) {
     res.json({ message: "Invalid User" });
   }
   try {
