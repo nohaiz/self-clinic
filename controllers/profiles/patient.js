@@ -33,7 +33,14 @@ router.get("/:userId/patients", async (req, res) => {
 // VIEW PATIENT
 
 router.get("/:userId/patients/:id", async (req, res) => {
-  if (req.params.id === req.user.type[3000]) {
+  req.user.type[3000]
+    ? req.user.type[3000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  if (
+    req.params.id === req.user.type[3000] ||
+    req.params.id === req.user.type[5000]
+  ) {
     try {
       const user = await User.findById(req.params.userId);
       if (!user) {
@@ -55,6 +62,10 @@ router.get("/:userId/patients/:id", async (req, res) => {
 
 // UPDATE PATIENT
 router.put("/:userId/patients/:id", async (req, res) => {
+  req.user.type[3000]
+    ? req.user.type[3000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
   if (req.params.id === req.user.type[3000]) {
     try {
       const user = await User.findById(req.params.userId);
@@ -95,8 +106,12 @@ router.put("/:userId/patients/:id", async (req, res) => {
 // DELETE PATIENT
 
 router.delete("/:userId/patients/:id", async (req, res) => {
+  req.user.type[5000]
+    ? req.user.type[5000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
   if (req.user.type[5000]) {
-    res.json({ message: "Invalid Patient User" });
+    res.json({ message: "Invalid User" });
   }
   try {
     const patient = await Patient.findByIdAndDelete(req.params.id);
