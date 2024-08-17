@@ -54,7 +54,7 @@ router.post("/sign-up", async (req, res) => {
 
     // CREATE A DEFAULT USER WITH HASHED PASSWORD
     const patientUser = await Patient.create(
-      ({ firstName, lastName, gender, DOB, contactNumber } = req.body)
+      ({ firstName, lastName, CPR, gender, DOB, contactNumber } = req.body)
     );
     payLoad.patientAct = patientUser._id;
     // CONDITIONALLY CREATES OR UPDATES USERS DATA
@@ -74,7 +74,7 @@ router.post("/sign-up", async (req, res) => {
         user = await User.findByIdAndUpdate(
           userInDatabase._id,
           { patientAct: payLoad.patientAct },
-          { new: true }
+          { new: true, runValidators: true }
         );
       } catch (error) {
         console.log(error);

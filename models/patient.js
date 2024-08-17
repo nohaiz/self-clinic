@@ -13,6 +13,15 @@ const patientSchema = new mongoose.Schema({
     trim: true,
     match: /^[^\s]+$/,
   },
+
+  CPR: {
+    type: Number,
+    required: true,
+    unique: true,
+    trim: true,
+    match: /^[0-9]{8}$/,
+    match: /^[^\s]+$/,
+  },
   gender: {
     type: String,
     enum: ["male", "female"],

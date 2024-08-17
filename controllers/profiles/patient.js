@@ -39,12 +39,14 @@ router.get("/:userId/patients/:id", async (req, res) => {
     res.status(404).json({ error: error.message });
   }
 });
+
 // UPDATE PATIENT
 
 router.put("/:userId/patients/:id", async (req, res) => {
   try {
     const patient = await Patient.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      runValidators: true,
     });
     res.json({ message: "Patient Updated" }, patient);
   } catch (error) {

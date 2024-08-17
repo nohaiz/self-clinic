@@ -48,6 +48,7 @@ router.post("/:userId/doctors", async (req, res) => {
       specialization,
       gender,
       availability,
+      CPR,
     } = req.body;
     try {
       const newDoctor = new Doctor({
@@ -57,6 +58,7 @@ router.post("/:userId/doctors", async (req, res) => {
         specialization,
         gender,
         availability,
+        CPR,
       });
       await newDoctor.save();
       let payLoad = {
@@ -97,6 +99,7 @@ router.put("/:userId/doctors/:id", async (req, res) => {
   try {
     const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      runValidators: true,
     });
     res.json({ message: "Doctor Updated" }, doctor);
   } catch (error) {

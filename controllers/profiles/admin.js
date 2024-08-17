@@ -95,6 +95,7 @@ router.put("/:userId/admins/:id", async (req, res) => {
     try {
       const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
+        runValidators: true,
       });
       res.json({ message: "Admin Updated" }, admin);
     } catch (error) {
