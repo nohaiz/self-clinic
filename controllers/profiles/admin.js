@@ -146,20 +146,22 @@ router.delete("/:userId/admins/:id", async (req, res) => {
     ? req.user.type[5000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  try {
-    const admin = await Admin.findByIdAndDelete(req.params.id);
-    if (!admin) {
-      return res.status(404).json({ error: "admin not found" });
-    }
+  if (req.user.type[5000]) {
+    try {
+      const admin = await Admin.findByIdAndDelete(req.params.id);
+      if (!admin) {
+        return res.status(404).json({ error: "admin not found" });
+      }
 
-    const user = await User.findByIdAndDelete(req.params.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+      const user = await User.findByIdAndDelete(req.params.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
-    res.json({ message: "admin and User Deleted", admin });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+      res.json({ message: "admin and User Deleted", admin });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   }
 });
 

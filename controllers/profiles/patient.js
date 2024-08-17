@@ -95,7 +95,6 @@ router.put("/:userId/patients/:id", async (req, res) => {
 
       res.json({ message: "Patient Updated", patient: updatedPatient });
     } catch (error) {
-      // Handle errors
       res.status(500).json({ error: error.message });
     }
   } else {
@@ -112,21 +111,22 @@ router.delete("/:userId/patients/:id", async (req, res) => {
 
   if (req.user.type[3000] || req.user.type[2000]) {
     res.json({ message: "Invalid User" });
-  }
-  try {
-    const patient = await Patient.findByIdAndDelete(req.params.id);
-    if (!patient) {
-      return res.status(404).json({ error: "Patient not found" });
-    }
+  } else {
+    try {
+      const patient = await Patient.findByIdAndDelete(req.params.id);
+      if (!patient) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
 
-    const user = await User.findByIdAndDelete(req.params.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+      const user = await User.findByIdAndDelete(req.params.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
-    res.json({ message: "Patient and User Deleted", patient });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+      res.json({ message: "Patient and User Deleted", patient });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   }
 });
 
