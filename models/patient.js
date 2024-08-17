@@ -5,13 +5,13 @@ const patientSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    match: /^[^\s]+$/,
+    match: /^[A-Za-z]+( [A-Za-z]+)*$/,
   },
   lastName: {
     type: String,
     required: true,
     trim: true,
-    match: /^[^\s]+$/,
+    match: /^[A-Za-z]+( [A-Za-z]+)*$/,
   },
 
   CPR: {
