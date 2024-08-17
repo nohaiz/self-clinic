@@ -9,37 +9,35 @@ const Doctor = require("../../models/doctor");
 // VIEW ALL DOCTORS
 
 router.get("/:userId/doctors", async (req, res) => {
-  if (req.user.type[2000]) {
-    try {
-      const doctors = await Doctor.find({});
-
-      res.json(doctors);
-    } catch (error) {
-      res.status(404).json({ error: error.message });
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
-  } else {
-    res.status(404).json({ error: "Oops, something went wrong" });
+    const doctors = await Doctor.find({});
+
+    res.json(doctors);
+  } catch (error) {
+    res.status(404).json({ error: error.message });
   }
 });
 
 // Create Doctor
 
-// router.post("/:userId/doctors", async (req, res) => {
-//   try {
-//     if (!req.user.type[2000]) {
-//       return res.status(403).json({ error: " Something wen't wrong" });
-//     }
-
-//     const newDoctor = new Doctor(req.body);
-//     await newDoctor.save();
-
-//     res.json({ message: "Doctor created", doctor: newDoctor });
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
-
 router.post("/:userId/doctors", async (req, res) => {
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
   if (req.user.type[2000]) {
     const {
       firstName,
@@ -48,8 +46,13 @@ router.post("/:userId/doctors", async (req, res) => {
       specialization,
       gender,
       availability,
+      CPR,
     } = req.body;
     try {
+      const userInDatabase = await User.findOne({ email: req.body.email });
+      if (userInDatabase) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
       const newDoctor = new Doctor({
         firstName,
         lastName,
@@ -57,6 +60,7 @@ router.post("/:userId/doctors", async (req, res) => {
         specialization,
         gender,
         availability,
+        CPR,
       });
       await newDoctor.save();
       let payLoad = {
@@ -80,8 +84,13 @@ router.post("/:userId/doctors", async (req, res) => {
 });
 
 // VIEW DOCTOR
+
 router.get("/:userId/doctors/:id", async (req, res) => {
   try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
     const doctor = await Doctor.findById(req.params.id);
 
     res.json(doctor);
@@ -91,24 +100,62 @@ router.get("/:userId/doctors/:id", async (req, res) => {
 });
 
 // UPDATE DOCTOR
+
 router.put("/:userId/doctors/:id", async (req, res) => {
-  try {
-    const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json({ message: "Doctor Updated" }, doctor);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  req.user.type[5000]
+    ? req.user.type[5000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  if (req.params.id === req.user.type[5000]) {
+    try {
+      const user = await User.findById(req.params.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { id } = req.params;
+      const updateData = req.body;
+
+      if (updateData.CPR) {
+        await Doctor.findById(id);
+        await Doctor.findOne({
+          CPR: updateData.CPR,
+          _id: { $ne: id },
+        });
+      }
+
+      const doctor = await Doctor.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+      });
+      if (!doctor) {
+        return res.status(404).json({ error: "Doctor not found" });
+      }
+      res.json({ message: "Doctor Updated" }, doctor);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
   }
 });
 
 // DELETE DOCTOR
+
 router.delete("/:userId/doctors/:id", async (req, res) => {
-  if (req.user.type[2000]) {
+  req.user.type[2000] || req.user.type[5000]
+    ? req.user.type
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  if (req.user.type[2000] || req.user.type[5000]) {
     try {
       const doctor = await Doctor.findByIdAndDelete(req.params.id);
+      if (!doctor) {
+        return res.status(404).json({ error: "Doctor not found" });
+      }
       const user = await User.findByIdAndDelete(req.params.userId);
-      res.json({ message: "Doctor Deleted" }, doctor);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json({ message: "Doctor and User Deleted", patient });
     } catch (error) {
       res.status(404).json({ error: error.message });
     }
