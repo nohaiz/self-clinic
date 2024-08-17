@@ -13,6 +13,11 @@ router.get("/:userId/doctors", async (req, res) => {
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
+  const user = await User.findById(req.params.userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
   if (req.user.type[2000]) {
     try {
       const doctors = await Doctor.find({});
@@ -85,6 +90,10 @@ router.post("/:userId/doctors", async (req, res) => {
 
 router.get("/:userId/doctors/:id", async (req, res) => {
   try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
     const doctor = await Doctor.findById(req.params.id);
 
     res.json(doctor);

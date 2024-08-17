@@ -5,21 +5,25 @@ const patientSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    match: /^[A-Za-z]+( [A-Za-z]+)*$/,
+    match: /^[A-Za-z]+$/,
   },
   lastName: {
     type: String,
     required: true,
     trim: true,
-    match: /^[A-Za-z]+( [A-Za-z]+)*$/,
+    match: /^[A-Za-z]+$/,
   },
-
   CPR: {
     type: Number,
     required: true,
     unique: true,
     trim: true,
-    match: /^\d{8}$/,
+    validate: {
+      validator: function (value) {
+        return /^\d{9}$/.test(value.toString());
+      },
+      message: "Invalid CPR",
+    },
   },
   gender: {
     type: String,

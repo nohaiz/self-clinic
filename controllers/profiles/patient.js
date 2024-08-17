@@ -15,6 +15,10 @@ router.get("/:userId/patients", async (req, res) => {
 
   if (req.user.type[2000]) {
     try {
+      const user = await User.findById(req.params.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
       const patients = await Patient.find({});
 
       res.json(patients);
@@ -29,40 +33,85 @@ router.get("/:userId/patients", async (req, res) => {
 // VIEW PATIENT
 
 router.get("/:userId/patients/:id", async (req, res) => {
-  try {
-    const patient = await Patient.findById(req.params.id);
-    if (!patient) {
-      return res.status(404).json({ error: "Patient not found" });
+  if (req.params.id === req.user.type[3000]) {
+    try {
+      const user = await User.findById(req.params.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const patient = await Patient.findById(req.params.id);
+      if (!patient) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
+      res.json(patient);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
     }
-    res.json(patient);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  } else {
+    res.json({ message: "Invalid Patient User" });
   }
 });
 
 // UPDATE PATIENT
-
 router.put("/:userId/patients/:id", async (req, res) => {
-  try {
-    const patient = await Patient.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    res.json({ message: "Patient Updated" }, patient);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  if (req.params.id === req.user.type[3000]) {
+    try {
+      const user = await User.findById(req.params.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const { id } = req.params;
+      const updateData = req.body;
+
+      if (updateData.CPR) {
+        await Patient.findById(id);
+        await Patient.findOne({
+          CPR: updateData.CPR,
+          _id: { $ne: id },
+        });
+      }
+
+      const updatedPatient = await Patient.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+      });
+
+      if (!updatedPatient) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
+
+      res.json({ message: "Patient Updated", patient: updatedPatient });
+    } catch (error) {
+      // Handle errors
+      res.status(500).json({ error: error.message });
+    }
+  } else {
+    res.json({ message: "Invalid Patient User" });
   }
 });
 
 // DELETE PATIENT
 
 router.delete("/:userId/patients/:id", async (req, res) => {
+  if (req.user.type[5000]) {
+    res.json({ message: "Invalid Patient User" });
+  }
   try {
     const patient = await Patient.findByIdAndDelete(req.params.id);
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
     const user = await User.findByIdAndDelete(req.params.userId);
-    res.json({ message: "Patient Deleted" }, patient);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "Patient and User Deleted", patient });
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
