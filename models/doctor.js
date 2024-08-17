@@ -18,8 +18,7 @@ const doctorSchema = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true,
-    match: /^[0-9]{8}$/,
-    match: /^[^\s]+$/,
+    match: /^\d{8}$/,
   },
   gender: {
     type: String,
