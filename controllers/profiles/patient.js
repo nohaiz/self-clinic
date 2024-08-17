@@ -9,6 +9,10 @@ const Patient = require("../../models/patient");
 // VIEW ALL PATIENT
 
 router.get("/:userId/patients", async (req, res) => {
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
   if (req.user.type[2000]) {
     try {
       const patients = await Patient.find({});

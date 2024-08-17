@@ -9,6 +9,10 @@ const Doctor = require("../../models/doctor");
 // VIEW ALL DOCTORS
 
 router.get("/:userId/doctors", async (req, res) => {
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
   if (req.user.type[2000]) {
     try {
       const doctors = await Doctor.find({});
@@ -24,22 +28,18 @@ router.get("/:userId/doctors", async (req, res) => {
 
 // Create Doctor
 
-// router.post("/:userId/doctors", async (req, res) => {
-//   try {
-//     if (!req.user.type[2000]) {
-//       return res.status(403).json({ error: " Something wen't wrong" });
-//     }
-
-//     const newDoctor = new Doctor(req.body);
-//     await newDoctor.save();
-
-//     res.json({ message: "Doctor created", doctor: newDoctor });
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
+// Needs to be tested
 
 router.post("/:userId/doctors", async (req, res) => {
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  const userInDatabase = await User.findOne({ email: req.body.email });
+  if (userInDatabase) {
+    return res.status(400).json({ error: "Username already taken" });
+  }
+
   if (req.user.type[2000]) {
     const {
       firstName,
@@ -80,6 +80,7 @@ router.post("/:userId/doctors", async (req, res) => {
 });
 
 // VIEW DOCTOR
+
 router.get("/:userId/doctors/:id", async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id);
@@ -91,6 +92,7 @@ router.get("/:userId/doctors/:id", async (req, res) => {
 });
 
 // UPDATE DOCTOR
+
 router.put("/:userId/doctors/:id", async (req, res) => {
   try {
     const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
@@ -103,7 +105,12 @@ router.put("/:userId/doctors/:id", async (req, res) => {
 });
 
 // DELETE DOCTOR
+
 router.delete("/:userId/doctors/:id", async (req, res) => {
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
   if (req.user.type[2000]) {
     try {
       const doctor = await Doctor.findByIdAndDelete(req.params.id);

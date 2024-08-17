@@ -10,21 +10,40 @@ const userSchema = mongoose.Schema(
     hashedPassword: {
       type: String,
       required: true,
+      minlength: 8,
     },
     docAct: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
       default: null,
+      validate: {
+        validator: function (v) {
+          return v == null || mongoose.Types.ObjectId.isValid(v);
+        },
+        message: "Invalid Doctor ObjectId",
+      },
     },
     patientAct: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patient",
       default: null,
+      validate: {
+        validator: function (v) {
+          return v === null || mongoose.Types.ObjectId.isValid(v);
+        },
+        message: "Invalid Patient ObjectId",
+      },
     },
     adminAct: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
       default: null,
+      validate: {
+        validator: function (v) {
+          return v == null || mongoose.Types.ObjectId.isValid(v);
+        },
+        message: "Invalid Admin ObjectId",
+      },
     },
   },
   {

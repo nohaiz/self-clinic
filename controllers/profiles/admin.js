@@ -10,6 +10,10 @@ const Admin = require("../../models/admin");
 // VIEW ALL ADMIN
 
 router.get("/:userId/admins", async (req, res) => {
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
   if (req.user.type[2000]) {
     try {
       const admins = await Admin.find({});
@@ -26,6 +30,15 @@ router.get("/:userId/admins", async (req, res) => {
 // CREATE ADMIN
 
 router.post("/:userId/admins", async (req, res) => {
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  const userInDatabase = await User.findOne({ email: req.body.email });
+  if (userInDatabase) {
+    return res.status(400).json({ error: "Username already taken" });
+  }
+
   if (req.user.type[2000]) {
     const { firstName, lastName, contactNumber } = req.body;
     try {
@@ -54,36 +67,60 @@ router.post("/:userId/admins", async (req, res) => {
 // VIEW ADIM
 
 router.get("/:userId/admins/:id", async (req, res) => {
-  try {
-    const admin = await Admin.findById(req.params.id);
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
 
-    res.json(admin);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  if (req.user.type[2000]) {
+    try {
+      const admin = await Admin.findById(req.params.id);
+
+      res.json(admin);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
+  } else {
+    res.status(404).json({ error: "Oops, something went wrong" });
   }
 });
 
 // UPDATE ADMIN
 
 router.put("/:userId/admins/:id", async (req, res) => {
-  try {
-    const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json({ message: "Admin Updated" }, admin);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  if (req.user.type[2000]) {
+    try {
+      const admin = await Admin.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+      });
+      res.json({ message: "Admin Updated" }, admin);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
+  } else {
+    res.status(404).json({ error: "Oops, something went wrong" });
   }
 });
 
 // DELETE ADMIN
 
 router.delete("/:userId/admins/:id", async (req, res) => {
-  try {
-    const admin = await Admin.findByIdAndDelete(req.params.id);
-    res.json({ message: "Admin Deleted" }, admin);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  req.user.type[2000]
+    ? req.user.type[2000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  if (req.user.type[2000]) {
+    try {
+      const admin = await Admin.findByIdAndDelete(req.params.id);
+      res.json({ message: "Admin Deleted" }, admin);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
+  } else {
+    res.status(404).json({ error: "Oops, something went wrong" });
   }
 });
 
