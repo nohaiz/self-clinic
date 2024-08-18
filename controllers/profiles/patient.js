@@ -9,11 +9,14 @@ const Patient = require("../../models/patient");
 // VIEW ALL PATIENT
 
 router.get("/patients", async (req, res) => {
-  req.user.type[2000]
+  req.user.type.hasOwnProperty(2000)
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  if (req.user.type[2000] || req.user.type[5000]) {
+  if (
+    req.user.type.hasOwnProperty(2000) ||
+    req.user.type.hasOwnProperty(5000)
+  ) {
     try {
       const patients = await Patient.find({});
 
@@ -29,14 +32,14 @@ router.get("/patients", async (req, res) => {
 // VIEW PATIENT
 
 router.get("/patients/:id", async (req, res) => {
-  req.user.type[3000] || req.user.type[5000]
+  req.user.type.hasOwnProperty(3000) || req.user.type.hasOwnProperty(5000)
     ? req.user.type
     : res.status(404).json({ error: "Oops, something went wrong" });
 
   if (
     req.params.id === req.user.type[3000] ||
-    req.user.type[5000] ||
-    req.user.type[2000]
+    req.user.type.hasOwnProperty(5000) ||
+    req.user.type.hasOwnProperty(2000)
   ) {
     try {
       const patient = await Patient.findById(req.params.id);
@@ -54,14 +57,14 @@ router.get("/patients/:id", async (req, res) => {
 
 // UPDATE PATIENT
 router.put("/patients/:id", async (req, res) => {
-  req.user.type[3000]
+  req.user.type.hasOwnProperty(3000)
     ? req.user.type[3000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
   if (
     req.params.id === req.user.type[3000] ||
-    req.user.type[5000] ||
-    req.user.type[2000]
+    req.user.type.hasOwnProperty(5000) ||
+    req.user.type.hasOwnProperty(2000)
   ) {
     try {
       const { id } = req.params;
@@ -100,7 +103,10 @@ router.put("/patients/:id", async (req, res) => {
 
 router.delete("/patients/:id", async (req, res) => {
   try {
-    if (req.user.type[3000] === req.params.id || req.user.type[2000]) {
+    if (
+      req.user.type[3000] === req.params.id ||
+      req.user.type.hasOwnProperty(2000)
+    ) {
       const patientId = req.params.id;
 
       const user = await User.findOne({ patientAct: patientId });
