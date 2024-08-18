@@ -128,11 +128,11 @@ router.put("/admins/:id", async (req, res) => {
 // DELETE ADMIN
 
 router.delete("/admins/:id", async (req, res) => {
-  req.user.type[5000]
-    ? req.user.type[5000]
+  req.user.type[2000]
+    ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  if (req.user.type[5000]) {
+  if (req.user.type[2000]) {
     try {
       const admin = await Admin.findByIdAndDelete(req.params.id);
       if (!admin) {

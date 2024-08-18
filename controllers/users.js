@@ -40,7 +40,7 @@ router.post("/sign-up", async (req, res) => {
             req.body.lastName = existingUser.lastName;
             req.body.CPR = existingUser.CPR;
           }
-        } else if (userInDatabase.doctorAct) {
+        } else if (userInDatabase.docAct) {
           const existingUser = await Doctor.findById(userInDatabase.docAct);
           if (
             existingUser.firstName !== req.body.firstName ||

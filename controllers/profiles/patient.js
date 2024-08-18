@@ -98,17 +98,26 @@ router.delete("/patients/:id", async (req, res) => {
     if (req.user.type[3000] || req.user.type[2000] === req.params.id) {
       const patientId = req.params.id;
 
+      const emptyProfiles = await User.findOne({ patientAct: patientId });
+      const noProfiles =
+        !emptyProfiles.docAct &&
+        !emptyProfiles.adminAct;
+      let user;
+      if (noProfiles) {
+        user = await User.findOneAndDelete({ patientAct: patientId });
+      } else {
+        user = await User.findOneAndUpdate(
+          { patientAct: patientId },
+          { patientAct: null },
+          { new: true }
+        );
+        // await user.Save();
+      }
       const patient = await Patient.findByIdAndDelete(patientId);
       if (!patient) {
         return res.status(404).json({ error: "Patient not found" });
       }
-
-      const user = await User.findOneAndDelete({ patientAct: patient._id });
-      if (!user) {
-        return res.json({ message: "User not found" });
-      }
-
-      res.json({ message: "Patient and associated User Deleted", patient });
+      res.json({ message: "Patient and associated User Deleted", user });
     } else {
       res.status(403).json({ error: "Forbidden: Insufficient permissions" });
     }
