@@ -21,6 +21,13 @@ router.post("/sign-up", async (req, res) => {
     // CHECK IF THE USER EXISTS
     const userInDatabase = await User.findOne({ email: req.body.email });
 
+    // CHECK IF THE PASSWORD AND CONFIRM PASSWORD MATCH
+    if (req.body.password !== req.body.confirmPassword) {
+      return res
+        .status(400)
+        .json({ error: "Confirm password and password needs to match" });
+    }
+
     // CHECKS IF THE USER EXIST AND IS A PATIENT
     let setAccount = false;
 
