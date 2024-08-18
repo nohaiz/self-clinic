@@ -27,10 +27,11 @@ const patientRouter = require("./controllers/profiles/patient.js");
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
-app.use(verifyToken);
 
 // ROUTES
 app.use("/users", usersRouter);
+
+app.use(verifyToken);
 app.use("/users", adminRouter);
 app.use("/users", patientRouter);
 app.use("/users", doctorRouter);

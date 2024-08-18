@@ -4,10 +4,26 @@ const patientSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: true,
+    trim: true,
+    match: /^[A-Za-z]+$/,
   },
   lastName: {
     type: String,
     required: true,
+    trim: true,
+    match: /^[A-Za-z]+$/,
+  },
+  CPR: {
+    type: Number,
+    required: true,
+    unique: true,
+    trim: true,
+    validate: {
+      validator: function (value) {
+        return /^\d{9}$/.test(value.toString());
+      },
+      message: "Invalid CPR",
+    },
   },
   gender: {
     type: String,
@@ -17,10 +33,20 @@ const patientSchema = new mongoose.Schema({
   DOB: {
     type: Date,
     required: true,
+    validate: [
+      {
+        validator: function (value) {
+          return value <= Date.now();
+        },
+        message: "Invalid date of birth entry.",
+      },
+    ],
   },
   contactNumber: {
     type: String,
     required: true,
+    trim: true,
+    match: /^[0-9]{8}$/,
   },
 });
 

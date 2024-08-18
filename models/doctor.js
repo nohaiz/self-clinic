@@ -4,10 +4,26 @@ const doctorSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: true,
+    trim: true,
+    match: /^[A-Za-z]+$/,
   },
   lastName: {
     type: String,
     required: true,
+    trim: true,
+    match: /^[A-Za-z]+$/,
+  },
+  CPR: {
+    type: Number,
+    required: true,
+    unique: true,
+    trim: true,
+    validate: {
+      validator: function (value) {
+        return /^\d{9}$/.test(value.toString());
+      },
+      message: "Invalid CPR",
+    },
   },
   gender: {
     type: String,
@@ -17,10 +33,13 @@ const doctorSchema = new mongoose.Schema({
   specialization: {
     type: String,
     required: true,
+    trim: true,
   },
   contactNumber: {
     type: String,
     required: true,
+    trim: true,
+    match: /^[0-9]{8}$/,
   },
   availability: [
     {
@@ -41,11 +60,25 @@ const doctorSchema = new mongoose.Schema({
         type: String,
         required: true,
         match: /^\d{2}:\d{2}$/,
+        validate: {
+          validator: function (v) {
+            const [hours, minutes] = v.split(":").map(Number);
+            return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+          },
+          message: "Invalid time format.",
+        },
       },
       endTime: {
         type: String,
         required: true,
         match: /^\d{2}:\d{2}$/,
+        validate: {
+          validator: function (v) {
+            const [hours, minutes] = v.split(":").map(Number);
+            return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+          },
+          message: "Invalid time format.",
+        },
       },
     },
   ],

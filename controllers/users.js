@@ -8,6 +8,8 @@ const bcrypt = require("bcrypt");
 
 const User = require("../models/user");
 const Patient = require("../models/patient");
+const Admin = require("../models/admin.js");
+const Doctor = require("../models/doctor.js");
 
 // HELPER
 const createToken = require("../helper/createToken.js");
@@ -16,31 +18,47 @@ const createToken = require("../helper/createToken.js");
 
 router.post("/sign-up", async (req, res) => {
   try {
-    // CHECK IF THE USER EXIST
+    // CHECK IF THE USER EXISTS
     const userInDatabase = await User.findOne({ email: req.body.email });
-    // CHECKS IF THE USER EXIST AND IS A PATIENT
 
+    // CHECKS IF THE USER EXIST AND IS A PATIENT
     let setAccount = false;
 
     if (userInDatabase) {
       if (userInDatabase.patientAct) {
         return res.status(400).json({ error: "Username already taken" });
       } else {
-        // CHECKS IF THE REQ BODY MATCHES THE EXISTING RESPECTIVE COLLECTION
-        // let validUserEntry;
-
-        // validUserEntry = await userInDatabase.populate();
-        // const type =
-        //   validUserEntry.docAct !== null && validUserEntry.docAct !== undefined
-        //     ? validUserEntry.docAct
-        //     : validUserEntry.adminAct;
-
-        // console.log(type);
-
         setAccount = true;
+        if (userInDatabase.adminAct) {
+          const existingUser = await Admin.findById(userInDatabase.adminAct);
+          if (
+            existingUser.firstName !== req.body.firstName ||
+            existingUser.lastName !== req.body.lastName ||
+            existingUser.CPR !== req.body.CPR
+          ) {
+            req.body.firstName = existingUser.firstName;
+            req.body.lastName = existingUser.lastName;
+            req.body.CPR = existingUser.CPR;
+          }
+        } else if (userInDatabase.docAct) {
+          const existingUser = await Doctor.findById(userInDatabase.docAct);
+          if (
+            existingUser.firstName !== req.body.firstName ||
+            existingUser.lastName !== req.body.lastName ||
+            existingUser.CPR !== req.body.CPR ||
+            existingUser.gender !== req.body.gender
+          ) {
+            req.body.firstName = existingUser.firstName;
+            req.body.lastName = existingUser.lastName;
+            req.body.CPR = existingUser.CPR;
+            req.body.gender = existingUser.gender;
+          }
+        }
       }
     }
+
     // USER PAYLOAD
+
     let payLoad = {
       email: req.body.email,
       hashedPassword: bcrypt.hashSync(
@@ -53,37 +71,34 @@ router.post("/sign-up", async (req, res) => {
     };
 
     // CREATE A DEFAULT USER WITH HASHED PASSWORD
-    const patientUser = await Patient.create(
-      ({ firstName, lastName, gender, DOB, contactNumber } = req.body)
-    );
+    const patientUser = await Patient.create({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      CPR: req.body.CPR,
+      gender: req.body.gender,
+      DOB: req.body.DOB,
+      contactNumber: req.body.contactNumber,
+    });
     payLoad.patientAct = patientUser._id;
+
     // CONDITIONALLY CREATES OR UPDATES USERS DATA
     let user;
-    if (payLoad.docAct) {
-      try {
-        user = await User.findByIdAndUpdate(
-          userInDatabase._id,
-          { patientAct: payLoad.patientAct },
-          { new: true, runValidators: true }
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (payLoad.adminAct) {
-      try {
-        user = await User.findByIdAndUpdate(
-          userInDatabase._id,
-          { patientAct: payLoad.patientAct },
-          { new: true }
-        );
-      } catch (error) {
-        console.log(error);
-      }
+
+    if (payLoad.docAct || payLoad.adminAct) {
+      user = await User.findById(userInDatabase._id);
+      updatedUser = await User.findByIdAndUpdate(
+        userInDatabase._id,
+        {
+          patientAct: payLoad.patientAct,
+        },
+        { new: true }
+      );
+      console.log(updatedUser);
     } else {
       user = await User.create(payLoad);
     }
-    const token = createToken(user);
 
+    const token = createToken(user);
     res.status(201).json({ user, token });
   } catch (error) {
     res.status(400).json({ error: error.message });
