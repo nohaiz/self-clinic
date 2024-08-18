@@ -128,25 +128,44 @@ router.put("/admins/:id", async (req, res) => {
 // DELETE ADMIN
 
 router.delete("/admins/:id", async (req, res) => {
-  req.user.type[2000]
-    ? req.user.type[2000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
+  try {
+    if (req.user.type[2000] || req.user.type[2000] === req.params.id) {
+      const adminId = req.params.id;
 
-  if (req.user.type[2000]) {
-    try {
-      const admin = await Admin.findByIdAndDelete(req.params.id);
-      if (!admin) {
-        return res.status(404).json({ error: "admin not found" });
-      }
-      const user = await User.findOneAndDelete({ docAct: req.params.id });
+      const user = await User.findOne({ adminAct: adminId });
+
       if (!user) {
-        return res.json({ message: "User not found" });
+        return res
+          .status(404)
+          .json({ error: "User associated with this admin not found" });
       }
 
-      res.json({ message: "admin and User Deleted", admin });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+      const noProfiles = !user.docAct && !user.patientAct;
+
+      if (noProfiles) {
+        await User.findOneAndDelete({ adminAct: adminId });
+      } else {
+        await User.findOneAndUpdate(
+          { adminAct: adminId },
+          { adminAct: null },
+          { new: true }
+        );
+      }
+
+      const admin = await Admin.findByIdAndDelete(adminId);
+      if (!admin) {
+        return res.status(404).json({ error: "Admin not found" });
+      }
+
+      res.json({
+        message: "Admin Account Deleted",
+        admin,
+      });
+    } else {
+      res.status(403).json({ error: "Forbidden: Insufficient permissions" });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

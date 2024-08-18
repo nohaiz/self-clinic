@@ -123,26 +123,42 @@ router.put("/doctors/:id", async (req, res) => {
 // DELETE DOCTOR
 
 router.delete("/doctors/:id", async (req, res) => {
-  req.user.type[2000] || req.user.type[5000]
-    ? req.user.type
-    : res.status(404).json({ error: "Oops, something went wrong" });
+  try {
+    // Check if the user has the required permissions
+    if (req.user.type[2000] || req.user.type[5000] === req.params.id) {
+      const doctorId = req.params.id;
 
-  if (req.user.type[2000] || req.user.type[5000] === req.params.id) {
-    try {
-      const doctor = await Doctor.findByIdAndDelete(req.params.id);
+      const user = await User.findOne({ docAct: doctorId });
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ error: "User associated with this doctor not found" });
+      }
+
+      const noProfiles = !user.adminAct && !user.patientAct;
+
+      if (noProfiles) {
+        await User.findOneAndDelete({ docAct: doctorId });
+      } else {
+        await User.findOneAndUpdate(
+          { docAct: doctorId },
+          { docAct: null },
+          { new: true }
+        );
+      }
+
+      const doctor = await Doctor.findByIdAndDelete(doctorId);
       if (!doctor) {
         return res.status(404).json({ error: "Doctor not found" });
       }
 
-      const user = await User.findOneAndDelete({ docAct: req.params.id });
-      if (!user) {
-        return res.json({ message: "User not found" });
-      }
-
-      res.json({ message: "Doctor and associated User Deleted", doctor });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.json({ message: "Doctor Account Deleted" });
+    } else {
+      res.status(403).json({ error: "Forbidden: Insufficient permissions" });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

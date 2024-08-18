@@ -36,7 +36,7 @@ router.get("/patients/:id", async (req, res) => {
   if (
     req.params.id === req.user.type[3000] ||
     req.user.type[5000] ||
-    req.user.type[2000] 
+    req.user.type[2000]
   ) {
     try {
       const patient = await Patient.findById(req.params.id);
@@ -58,7 +58,11 @@ router.put("/patients/:id", async (req, res) => {
     ? req.user.type[3000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  if (req.params.id === req.user.type[3000] || req.user.type[5000] || req.user.type[2000])  {
+  if (
+    req.params.id === req.user.type[3000] ||
+    req.user.type[5000] ||
+    req.user.type[2000]
+  ) {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -99,24 +103,32 @@ router.delete("/patients/:id", async (req, res) => {
     if (req.user.type[3000] === req.params.id || req.user.type[2000]) {
       const patientId = req.params.id;
 
-      const emptyProfiles = await User.findOne({ patientAct: patientId });
-      const noProfiles = !emptyProfiles.docAct && !emptyProfiles.adminAct;
-      let user;
+      const user = await User.findOne({ patientAct: patientId });
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ error: "User associated with this patient not found" });
+      }
+
+      const noProfiles = !user.docAct && !user.adminAct;
+
       if (noProfiles) {
-        user = await User.findOneAndDelete({ patientAct: patientId });
+        await User.findOneAndDelete({ patientAct: patientId });
       } else {
-        user = await User.findOneAndUpdate(
+        await User.findOneAndUpdate(
           { patientAct: patientId },
           { patientAct: null },
           { new: true }
         );
-        // await user.Save();
       }
+
       const patient = await Patient.findByIdAndDelete(patientId);
       if (!patient) {
         return res.status(404).json({ error: "Patient not found" });
       }
-      res.json({ message: "Patient and associated User Deleted", user });
+
+      res.json({ message: "Patient Account Deleted" });
     } else {
       res.status(403).json({ error: "Forbidden: Insufficient permissions" });
     }
@@ -124,5 +136,4 @@ router.delete("/patients/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 module.exports = router;
