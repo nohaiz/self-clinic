@@ -18,8 +18,15 @@ const createToken = require("../helper/createToken.js");
 
 router.post("/sign-up", async (req, res) => {
   try {
-    // CHECK IF THE USER EXIST
+    // CHECK IF THE USER EXISTS
     const userInDatabase = await User.findOne({ email: req.body.email });
+
+    // CHECK IF THE PASSWORD AND CONFIRM PASSWORD MATCH
+    if (req.body.password !== req.body.confirmPassword) {
+      return res
+        .status(400)
+        .json({ error: "Confirm password and password needs to match" });
+    }
 
     // CHECKS IF THE USER EXIST AND IS A PATIENT
     let setAccount = false;
@@ -40,7 +47,7 @@ router.post("/sign-up", async (req, res) => {
             req.body.lastName = existingUser.lastName;
             req.body.CPR = existingUser.CPR;
           }
-        } else if (userInDatabase.doctorAct) {
+        } else if (userInDatabase.docAct) {
           const existingUser = await Doctor.findById(userInDatabase.docAct);
           if (
             existingUser.firstName !== req.body.firstName ||
@@ -56,6 +63,7 @@ router.post("/sign-up", async (req, res) => {
         }
       }
     }
+
     // USER PAYLOAD
 
     let payLoad = {
@@ -70,9 +78,14 @@ router.post("/sign-up", async (req, res) => {
     };
 
     // CREATE A DEFAULT USER WITH HASHED PASSWORD
-    const patientUser = await Patient.create(
-      ({ firstName, lastName, CPR, gender, DOB, contactNumber } = req.body)
-    );
+    const patientUser = await Patient.create({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      CPR: req.body.CPR,
+      gender: req.body.gender,
+      DOB: req.body.DOB,
+      contactNumber: req.body.contactNumber,
+    });
     payLoad.patientAct = patientUser._id;
 
     // CONDITIONALLY CREATES OR UPDATES USERS DATA
@@ -91,8 +104,8 @@ router.post("/sign-up", async (req, res) => {
     } else {
       user = await User.create(payLoad);
     }
-    const token = createToken(user);
 
+    const token = createToken(user);
     res.status(201).json({ user, token });
   } catch (error) {
     res.status(400).json({ error: error.message });

@@ -8,17 +8,16 @@ const Patient = require("../../models/patient");
 
 // VIEW ALL PATIENT
 
-router.get("/:userId/patients", async (req, res) => {
-  req.user.type[2000]
+router.get("/patients", async (req, res) => {
+  req.user.type.hasOwnProperty(2000)
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  if (req.user.type[2000]) {
+  if (
+    req.user.type.hasOwnProperty(2000) ||
+    req.user.type.hasOwnProperty(5000)
+  ) {
     try {
-      const user = await User.findById(req.params.userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
       const patients = await Patient.find({});
 
       res.json(patients);
@@ -32,21 +31,17 @@ router.get("/:userId/patients", async (req, res) => {
 
 // VIEW PATIENT
 
-router.get("/:userId/patients/:id", async (req, res) => {
-  req.user.type[3000] || req.user.type[5000]
+router.get("/patients/:id", async (req, res) => {
+  req.user.type.hasOwnProperty(3000) || req.user.type.hasOwnProperty(5000)
     ? req.user.type
     : res.status(404).json({ error: "Oops, something went wrong" });
 
   if (
     req.params.id === req.user.type[3000] ||
-    req.params.id === req.user.type[5000]
+    req.user.type.hasOwnProperty(5000) ||
+    req.user.type.hasOwnProperty(2000)
   ) {
     try {
-      const user = await User.findById(req.params.userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
       const patient = await Patient.findById(req.params.id);
       if (!patient) {
         return res.status(404).json({ error: "Patient not found" });
@@ -61,18 +56,17 @@ router.get("/:userId/patients/:id", async (req, res) => {
 });
 
 // UPDATE PATIENT
-router.put("/:userId/patients/:id", async (req, res) => {
-  req.user.type[3000]
+router.put("/patients/:id", async (req, res) => {
+  req.user.type.hasOwnProperty(3000)
     ? req.user.type[3000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  if (req.params.id === req.user.type[3000]) {
+  if (
+    req.params.id === req.user.type[3000] ||
+    req.user.type.hasOwnProperty(5000) ||
+    req.user.type.hasOwnProperty(2000)
+  ) {
     try {
-      const user = await User.findById(req.params.userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
       const { id } = req.params;
       const updateData = req.body;
 
@@ -93,7 +87,10 @@ router.put("/:userId/patients/:id", async (req, res) => {
         return res.status(404).json({ error: "Patient not found" });
       }
 
-      res.json({ message: "Patient Updated", patient: updatedPatient });
+      res.status(200).json({
+        message: "Patient updated successfully",
+        patient: updatedPatient,
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -104,30 +101,45 @@ router.put("/:userId/patients/:id", async (req, res) => {
 
 // DELETE PATIENT
 
-router.delete("/:userId/patients/:id", async (req, res) => {
-  req.user.type[3000] || req.user.type[2000]
-    ? req.user.type
-    : res.status(404).json({ error: "Oops, something went wrong" });
+router.delete("/patients/:id", async (req, res) => {
+  try {
+    if (
+      req.user.type[3000] === req.params.id ||
+      req.user.type.hasOwnProperty(2000)
+    ) {
+      const patientId = req.params.id;
 
-  if (req.user.type[3000] || req.user.type[2000]) {
-    res.json({ message: "Invalid User" });
-  } else {
-    try {
-      const patient = await Patient.findByIdAndDelete(req.params.id);
+      const user = await User.findOne({ patientAct: patientId });
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ error: "User associated with this patient not found" });
+      }
+
+      const noProfiles = !user.docAct && !user.adminAct;
+
+      if (noProfiles) {
+        await User.findOneAndDelete({ patientAct: patientId });
+      } else {
+        await User.findOneAndUpdate(
+          { patientAct: patientId },
+          { patientAct: null },
+          { new: true }
+        );
+      }
+
+      const patient = await Patient.findByIdAndDelete(patientId);
       if (!patient) {
         return res.status(404).json({ error: "Patient not found" });
       }
 
-      const user = await User.findByIdAndDelete(req.params.userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      res.json({ message: "Patient and User Deleted", patient });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.json({ message: "Patient Account Deleted" });
+    } else {
+      res.status(403).json({ error: "Forbidden: Insufficient permissions" });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
-
 module.exports = router;

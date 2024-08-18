@@ -32,8 +32,8 @@ app.use(morgan("dev"));
 
 // ROUTES
 app.use("/users", usersRouter);
-app.use(verifyToken);
 
+app.use(verifyToken);
 app.use("/users", adminRouter);
 app.use("/users", patientRouter);
 app.use("/users", doctorRouter);

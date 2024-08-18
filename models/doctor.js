@@ -39,7 +39,6 @@ const doctorSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    match: /^[^\s]+$/,
   },
   contactNumber: {
     type: String,
