@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const User = require("./user");
 
 const serviceSchema = mongoose.Schema(
     {
@@ -7,6 +6,7 @@ const serviceSchema = mongoose.Schema(
             type: String,
             required: true,
             trim: true,
+            maxLength: 35
         },
         category: {
             type: String,
@@ -15,21 +15,13 @@ const serviceSchema = mongoose.Schema(
         },
         description: {
             type: String,
+            trim: true,
+            maxLength: 255
         },
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
-            validate: {
-                validator: async (userId) => {
-                    const user = await User.findById(userId);
-
-                    if (user && user.adminAct) {
-                        return true;
-                    } else false;
-                },
-                message: "User not valid",
-            }
         },
 
     },

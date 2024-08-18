@@ -1,5 +1,5 @@
 function isAdmin(req, res, next) {
-    if (!req.user.type[2000]) {
+    if (req.user.type.hasOwnProperty(2000)) {
         return res.status(401).json({
             message: "Invalid User"
         })
@@ -8,3 +8,4 @@ function isAdmin(req, res, next) {
     }
 }
 module.exports=isAdmin;
+
