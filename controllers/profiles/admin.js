@@ -93,7 +93,7 @@ router.put("/admins/:id", async (req, res) => {
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  if (req.params.id === req.user.type[2000]) {
+  if (req.user.type[2000]) {
     try {
       const { id } = req.params;
       const updateData = req.body;
