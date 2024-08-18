@@ -8,6 +8,8 @@ const bcrypt = require("bcrypt");
 
 const User = require("../models/user");
 const Patient = require("../models/patient");
+const Admin = require("../models/admin.js");
+const Doctor = require("../models/doctor.js");
 
 // HELPER
 const createToken = require("../helper/createToken.js");
@@ -19,49 +21,44 @@ router.post("/sign-up", async (req, res) => {
     // CHECK IF THE USER EXISTS
     const userInDatabase = await User.findOne({ email: req.body.email });
 
+    // CHECKS IF THE USER EXIST AND IS A PATIENT
     let setAccount = false;
 
     if (userInDatabase) {
       if (userInDatabase.patientAct) {
         return res.status(400).json({ error: "Username already taken" });
-      } else if (userInDatabase.docAct || userInDatabase.adminAct) {
-        // Finds the existing doctor and admin
-        const existingDoctor = await Doctor.findById(userInDatabase.docAct);
-        const existingAdmin = await Admin.findById(userInDatabase.adminAct);
-
-        if (!existingAdmin && !existingDoctor) {
-          setAccount = true;
-        }
-
-        // Checks if existing doctor data matches the new data
-        if (userInDatabase.docAct) {
+      } else {
+        setAccount = true;
+        if (userInDatabase.adminAct) {
+          const existingUser = await Admin.findById(userInDatabase.adminAct);
           if (
-            existingDoctor.firstName !== req.body.firstName ||
-            existingDoctor.lastName !== req.body.lastName ||
-            existingDoctor.CPR !== req.body.CPR ||
-            existingDoctor.gender !== req.body.gender
+            existingUser.firstName !== req.body.firstName ||
+            existingUser.lastName !== req.body.lastName ||
+            existingUser.CPR !== req.body.CPR
           ) {
-            return res
-              .status(400)
-              .json({ error: "Existing data doesn't match" });
+            req.body.firstName = existingUser.firstName;
+            req.body.lastName = existingUser.lastName;
+            req.body.CPR = existingUser.CPR;
           }
-        }
-        // Checks if existing admin data matches the new data
-        else if (userInDatabase.adminAct) {
+        } else if (userInDatabase.docAct) {
+          const existingUser = await Doctor.findById(userInDatabase.docAct);
           if (
-            existingAdmin.firstName !== req.body.firstName ||
-            existingAdmin.lastName !== req.body.lastName ||
-            existingAdmin.CPR !== req.body.CPR
+            existingUser.firstName !== req.body.firstName ||
+            existingUser.lastName !== req.body.lastName ||
+            existingUser.CPR !== req.body.CPR ||
+            existingUser.gender !== req.body.gender
           ) {
-            return res
-              .status(400)
-              .json({ error: "Existing data doesn't match" });
+            req.body.firstName = existingUser.firstName;
+            req.body.lastName = existingUser.lastName;
+            req.body.CPR = existingUser.CPR;
+            req.body.gender = existingUser.gender;
           }
         }
       }
     }
 
     // USER PAYLOAD
+
     let payLoad = {
       email: req.body.email,
       hashedPassword: bcrypt.hashSync(
@@ -84,28 +81,19 @@ router.post("/sign-up", async (req, res) => {
     });
     payLoad.patientAct = patientUser._id;
 
-    // CONDITIONALLY CREATES OR UPDATES USER DATA
+    // CONDITIONALLY CREATES OR UPDATES USERS DATA
     let user;
-    if (payLoad.docAct) {
-      try {
-        user = await User.findByIdAndUpdate(
-          userInDatabase._id,
-          { patientAct: payLoad.patientAct },
-          { new: true, runValidators: true }
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (payLoad.adminAct) {
-      try {
-        user = await User.findByIdAndUpdate(
-          userInDatabase._id,
-          { patientAct: payLoad.patientAct },
-          { new: true, runValidators: true }
-        );
-      } catch (error) {
-        console.log(error);
-      }
+
+    if (payLoad.docAct || payLoad.adminAct) {
+      user = await User.findById(userInDatabase._id);
+      updatedUser = await User.findByIdAndUpdate(
+        userInDatabase._id,
+        {
+          patientAct: payLoad.patientAct,
+        },
+        { new: true }
+      );
+      console.log(updatedUser);
     } else {
       user = await User.create(payLoad);
     }

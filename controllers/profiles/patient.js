@@ -8,7 +8,7 @@ const Patient = require("../../models/patient");
 
 // VIEW ALL PATIENT
 
-router.get("/:userId/patients", async (req, res) => {
+router.get("/patients", async (req, res) => {
   req.user.type[2000]
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
@@ -28,59 +28,99 @@ router.get("/:userId/patients", async (req, res) => {
 
 // VIEW PATIENT
 
-router.get("/:userId/patients/:id", async (req, res) => {
-  try {
-    const patient = await Patient.findById(req.params.id);
-    if (!patient) {
-      return res.status(404).json({ error: "Patient not found" });
+router.get("/patients/:id", async (req, res) => {
+  req.user.type[3000] || req.user.type[5000]
+    ? req.user.type
+    : res.status(404).json({ error: "Oops, something went wrong" });
+
+  if (
+    req.params.id === req.user.type[3000] ||
+    req.params.id === req.user.type[5000]
+  ) {
+    try {
+      const patient = await Patient.findById(req.params.id);
+      if (!patient) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
+      res.json(patient);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
     }
-    res.json(patient);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
+  } else {
+    res.json({ message: "Invalid Patient User" });
   }
 });
 
 // UPDATE PATIENT
-router.put("/:userId/patients/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
+router.put("/patients/:id", async (req, res) => {
+  req.user.type[3000]
+    ? req.user.type[3000]
+    : res.status(404).json({ error: "Oops, something went wrong" });
 
-    if (updateData.CPR) {
-      await Patient.findById(id);
+  if (req.params.id === req.user.type[3000]) {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
 
-      const existingPatient = await Patient.findOne({
-        CPR: updateData.CPR,
-        _id: { $ne: id },
+      if (updateData.CPR) {
+        await Patient.findById(id);
+        await Patient.findOne({
+          CPR: updateData.CPR,
+          _id: { $ne: id },
+        });
+      }
+
+      const updatedPatient = await Patient.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
       });
+
+      if (!updatedPatient) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
+
+      res.status(200).json({
+        message: "Patient updated successfully",
+        patient: updatedPatient,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-
-    const updatedPatient = await Patient.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!updatedPatient) {
-      return res.status(404).json({ error: "Patient not found" });
-    }
-
-    // Respond with the updated patient data
-    res.json({ message: "Patient Updated", patient: updatedPatient });
-  } catch (error) {
-    // Handle errors
-    res.status(500).json({ error: error.message });
+  } else {
+    res.json({ message: "Invalid Patient User" });
   }
 });
 
 // DELETE PATIENT
 
-router.delete("/:userId/patients/:id", async (req, res) => {
+router.delete("/patients/:id", async (req, res) => {
   try {
-    const patient = await Patient.findByIdAndDelete(req.params.id);
-    const user = await User.findByIdAndDelete(req.params.userId);
-    res.json({ message: "Patient Deleted" }, patient);
+    if (req.user.type[3000] || req.user.type[2000] === req.params.id) {
+      const patientId = req.params.id;
+
+      const emptyProfiles = await User.findOne({ patientAct: patientId });
+      const noProfiles = !emptyProfiles.docAct && !emptyProfiles.adminAct;
+      let user;
+      if (noProfiles) {
+        user = await User.findOneAndDelete({ patientAct: patientId });
+      } else {
+        user = await User.findOneAndUpdate(
+          { patientAct: patientId },
+          { patientAct: null },
+          { new: true }
+        );
+        // await user.Save();
+      }
+      const patient = await Patient.findByIdAndDelete(patientId);
+      if (!patient) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
+      res.json({ message: "Patient and associated User Deleted", user });
+    } else {
+      res.status(403).json({ error: "Forbidden: Insufficient permissions" });
+    }
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 

@@ -9,7 +9,7 @@ const Admin = require("../../models/admin");
 
 // VIEW ALL ADMIN
 
-router.get("/:userId/admins", async (req, res) => {
+router.get("/admins", async (req, res) => {
   req.user.type[2000]
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
@@ -29,18 +29,10 @@ router.get("/:userId/admins", async (req, res) => {
 
 // CREATE ADMIN
 
-router.post("/:userId/admins", async (req, res) => {
+router.post("/admins", async (req, res) => {
   req.user.type[2000]
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
-  try {
-    const user = await User.findById(req.params.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-  } catch (error) {
-    console.error(error); // Log the error to the console
-  }
 
   if (req.user.type[2000]) {
     const { firstName, lastName, contactNumber, CPR, email, password } =
@@ -53,9 +45,9 @@ router.post("/:userId/admins", async (req, res) => {
       const newAdmin = new Admin({ firstName, lastName, contactNumber, CPR });
       await newAdmin.save();
       let payLoad = {
-        email: req.body.email,
+        email: email,
         hashedPassword: bcrypt.hashSync(
-          req.body.password,
+          password,
           parseInt(process.env.SALT_ROUNDS)
         ),
         adminAct: newAdmin._id,
@@ -74,18 +66,13 @@ router.post("/:userId/admins", async (req, res) => {
 
 // VIEW ADIM
 
-router.get("/:userId/admins/:id", async (req, res) => {
+router.get("/admins/:id", async (req, res) => {
   req.user.type[2000]
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
   if (req.params.id === req.user.type[2000]) {
     try {
-      const user = await User.findById(req.params.userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
       const admin = await Admin.findById(req.params.id);
       if (!admin) {
         return res.status(404).json({ error: "admin not found" });
@@ -101,17 +88,13 @@ router.get("/:userId/admins/:id", async (req, res) => {
 
 // UPDATE ADMIN
 
-router.put("/:userId/admins/:id", async (req, res) => {
+router.put("/admins/:id", async (req, res) => {
   req.user.type[2000]
     ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
   if (req.params.id === req.user.type[2000]) {
     try {
-      const user = await User.findById(req.params.userId);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
       const { id } = req.params;
       const updateData = req.body;
 
@@ -130,7 +113,10 @@ router.put("/:userId/admins/:id", async (req, res) => {
       if (!updatedAdmin) {
         return res.status(404).json({ error: "Admin not found" });
       }
-      res.json({ message: "Admin Updated", admin: updatedAdmin });
+      res.status(200).json({
+        message: "Admin updated successfully",
+        admin: updatedAdmin,
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -141,25 +127,26 @@ router.put("/:userId/admins/:id", async (req, res) => {
 
 // DELETE ADMIN
 
-router.delete("/:userId/admins/:id", async (req, res) => {
-  req.user.type[5000]
-    ? req.user.type[5000]
+router.delete("/admins/:id", async (req, res) => {
+  req.user.type[2000]
+    ? req.user.type[2000]
     : res.status(404).json({ error: "Oops, something went wrong" });
 
-  try {
-    const admin = await Admin.findByIdAndDelete(req.params.id);
-    if (!admin) {
-      return res.status(404).json({ error: "admin not found" });
-    }
+  if (req.user.type[2000]) {
+    try {
+      const admin = await Admin.findByIdAndDelete(req.params.id);
+      if (!admin) {
+        return res.status(404).json({ error: "admin not found" });
+      }
+      const user = await User.findOneAndDelete({ docAct: req.params.id });
+      if (!user) {
+        return res.json({ message: "User not found" });
+      }
 
-    const user = await User.findByIdAndDelete(req.params.userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      res.json({ message: "admin and User Deleted", admin });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-
-    res.json({ message: "admin and User Deleted", admin });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
 });
 
