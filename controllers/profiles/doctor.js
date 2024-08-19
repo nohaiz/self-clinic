@@ -22,10 +22,6 @@ router.get("/doctors", async (req, res) => {
 // Create Doctor
 
 router.post("/doctors", async (req, res) => {
-  req.user.type.hasOwnProperty(2000)
-    ? req.user.type[2000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (req.user.type.hasOwnProperty(2000)) {
     const {
       firstName,
@@ -86,10 +82,6 @@ router.get("/doctors/:id", async (req, res) => {
 // UPDATE DOCTOR
 
 router.put("/doctors/:id", async (req, res) => {
-  req.user.type.hasOwnProperty(5000)
-    ? req.user.type[5000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (
     req.params.id === req.user.type[5000] ||
     req.user.type.hasOwnProperty(2000)

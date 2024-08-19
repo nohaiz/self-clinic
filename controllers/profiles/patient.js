@@ -9,10 +9,6 @@ const Patient = require("../../models/patient");
 // VIEW ALL PATIENT
 
 router.get("/patients", async (req, res) => {
-  req.user.type.hasOwnProperty(2000)
-    ? req.user.type[2000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (
     req.user.type.hasOwnProperty(2000) ||
     req.user.type.hasOwnProperty(5000)
@@ -32,10 +28,6 @@ router.get("/patients", async (req, res) => {
 // VIEW PATIENT
 
 router.get("/patients/:id", async (req, res) => {
-  req.user.type.hasOwnProperty(3000) || req.user.type.hasOwnProperty(5000)
-    ? req.user.type
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (
     req.params.id === req.user.type[3000] ||
     req.user.type.hasOwnProperty(5000) ||
@@ -57,10 +49,6 @@ router.get("/patients/:id", async (req, res) => {
 
 // UPDATE PATIENT
 router.put("/patients/:id", async (req, res) => {
-  req.user.type.hasOwnProperty(3000)
-    ? req.user.type[3000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (
     req.params.id === req.user.type[3000] ||
     req.user.type.hasOwnProperty(5000) ||
