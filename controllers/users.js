@@ -102,7 +102,6 @@ router.post("/sign-up", async (req, res) => {
       );
     } else {
       user = await User.create(payLoad);
-      console.log(user.patientAct);
     }
     let userObj = {};
 
