@@ -10,10 +10,6 @@ const Admin = require("../../models/admin");
 // VIEW ALL ADMIN
 
 router.get("/admins", async (req, res) => {
-  req.user.type.hasOwnProperty(2000)
-    ? req.user.type[2000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (req.user.type.hasOwnProperty(2000)) {
     try {
       const admins = await Admin.find({});
@@ -30,10 +26,6 @@ router.get("/admins", async (req, res) => {
 // CREATE ADMIN
 
 router.post("/admins", async (req, res) => {
-  req.user.type.hasOwnProperty(2000)
-    ? req.user.type[2000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (req.user.type.hasOwnProperty(2000)) {
     const { firstName, lastName, contactNumber, CPR, email, password } =
       req.body;
@@ -67,10 +59,6 @@ router.post("/admins", async (req, res) => {
 // VIEW ADIM
 
 router.get("/admins/:id", async (req, res) => {
-  req.user.type.hasOwnProperty(2000)
-    ? req.user.type[2000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (req.params.id === req.user.type[2000]) {
     try {
       const admin = await Admin.findById(req.params.id);
@@ -89,10 +77,6 @@ router.get("/admins/:id", async (req, res) => {
 // UPDATE ADMIN
 
 router.put("/admins/:id", async (req, res) => {
-  req.user.type.hasOwnProperty(2000)
-    ? req.user.type[2000]
-    : res.status(404).json({ error: "Oops, something went wrong" });
-
   if (req.user.type.hasOwnProperty(2000)) {
     try {
       const { id } = req.params;
