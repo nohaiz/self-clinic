@@ -100,13 +100,24 @@ router.post("/sign-up", async (req, res) => {
         },
         { new: true }
       );
-      console.log(updatedUser);
     } else {
       user = await User.create(payLoad);
+      console.log(user.patientAct);
+    }
+    let userObj = {};
+
+    if (user.docAct) {
+      userObj[5000] = user.docAct;
+    }
+    if (user.patientAct) {
+      userObj[3000] = user.patientAct;
+    }
+    if (user.adminAct) {
+      userObj[2000] = user.adminAct;
     }
 
-    const token = createToken(user);
-    res.status(201).json({ user, token });
+    const token = createToken(userObj);
+    res.status(201).json({ token });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -136,7 +147,6 @@ router.post("/sign-in", async (req, res) => {
       }
       // CREATES A TOKEN
       const token = createToken(user);
-
       res.status(200).json({ token });
     } else {
       res.status(401).json({ error: "Invalid username or password." });
