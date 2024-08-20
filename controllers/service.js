@@ -2,11 +2,10 @@
 const express = require("express");
 const router = express.Router();
 
-//MIDDLEWARE
-const isAdmin = require("../middlewares/checkAdmin");
 
 // MODELS
 const ServiceModel = require("../models/service");
+const AppointmentModel = require("../models/appointment");
 
 
 // FETCH ALL SERVICES
@@ -39,9 +38,11 @@ router.get("/:id", async (req, res) => {
 })
 
 // CREATE A SERVICE WITH ID
-router.post("/", isAdmin, async (req, res) => {
+router.post("/", async (req, res) => {
     try {
-
+        if (!req.user.type.hasOwnProperty(2000)) {
+            return res.status(401).json({ message: "Unauthorized: Admin access required" });
+          }
         const { name, category, description, user } = req.body;
         const service = await ServiceModel.create({ name, category, description, user });
 
@@ -53,8 +54,11 @@ router.post("/", isAdmin, async (req, res) => {
 })
 
 // UPDATE A SERVICE WITH ID
-router.put("/:id", isAdmin, async (req, res) => {
+router.put("/:id",  async (req, res) => {
     try {
+        if (!req.user.type.hasOwnProperty(2000)) {
+            return res.status(401).json({ message: "Unauthorized: Admin access required" });
+          }
         const service = await ServiceModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
         return res.status(202).json({ message: "Service updated successfully.", service });
@@ -65,18 +69,24 @@ router.put("/:id", isAdmin, async (req, res) => {
 })
 
 // DELETE A SERVICE WITH ID
-router.delete("/:id", isAdmin, async (req, res) => {
+router.delete("/:id", async (req, res) => {
     try {
-        if (!req.user.type[2000]) {
-            return res.status(401).json({
-                message: "Invalid User"
-            })
-        }
+        
+        if (!req.user.type.hasOwnProperty(2000)) {
+            return res.status(401).json({ message: "Unauthorized: Admin access required" });
+          }
         const service = await ServiceModel.findById(req.params.id);
 
         if (!service) {
             return res.status(404).json({ message: "Service not found for deletion" });
         }
+        
+        const associatedAppointments= await AppointmentModel.find({service: req.params.id})
+
+        if(associatedAppointments.length>0){
+            return res.status(400).json({ message: "Cant delete service as it is associated with appointments"});
+        }
+
 
         await ServiceModel.findByIdAndDelete(req.params.id);
 
