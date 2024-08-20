@@ -27,11 +27,6 @@ const doctorSchema = new mongoose.Schema({
       message: "Invalid CPR",
     },
   },
-  CPR: {
-    type: Number,
-    required: true,
-    unique: true,
-  },
   gender: {
     type: String,
     enum: ["male", "female"],
