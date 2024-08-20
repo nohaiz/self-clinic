@@ -87,6 +87,7 @@ const doctorSchema = new mongoose.Schema({
   service: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    required: true,
   }
 
 });
