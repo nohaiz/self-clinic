@@ -12,10 +12,10 @@ router.get("/", async (req, res) => {
         let appointments;
 
         if (req.user.type.hasOwnProperty(2000) || req.user.type.hasOwnProperty(5000)) { //return all patients appointments to Admin & Doctor
-            appointments = await AppointmentModel.find({});
+            appointments = await AppointmentModel.find({}).populate(['service', 'doctor', 'patient']);
 
         } else if (req.user.type.hasOwnProperty(3000)) {
-            appointments = await AppointmentModel.find({ patient: req.user.type[3000] }); // return all of appointments for this particular patient
+            appointments = await AppointmentModel.find({ patient: req.user.type[3000] }).populate(['service', 'doctor', 'patient']); // return all of appointments for this particular patient
         }
 
         return res.status(200).json({ appointments })
