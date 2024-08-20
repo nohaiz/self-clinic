@@ -21,6 +21,8 @@ const usersRouter = require("./controllers/users.js");
 const adminRouter = require("./controllers/profiles/admin.js");
 const doctorRouter = require("./controllers/profiles/doctor.js");
 const patientRouter = require("./controllers/profiles/patient.js");
+const serviceRouter = require("./controllers/service.js");
+const appointmentRouter = require("./controllers/appointment.js");
 
 // MIDDLEWARE
 
@@ -35,6 +37,8 @@ app.use(verifyToken);
 app.use("/users", adminRouter);
 app.use("/users", patientRouter);
 app.use("/users", doctorRouter);
+app.use("/services", serviceRouter);
+app.use("/appointments", appointmentRouter);
 
 app.listen(port, () => {
   console.log("The express app is ready!");
