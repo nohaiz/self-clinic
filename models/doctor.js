@@ -16,13 +16,13 @@ const doctorSchema = new mongoose.Schema({
     maxLength: 35,
   },
   CPR: {
-    type: Number,
+    type: String,
     required: true,
     unique: true,
     trim: true,
     validate: {
       validator: function (value) {
-        return /^\d{9}$/.test(value.toString());
+        return /^\d{9}$/.test(value);
       },
       message: "Invalid CPR",
     },
