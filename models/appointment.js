@@ -41,24 +41,20 @@ const appointmentSchema = mongoose.Schema(
         service: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Service",
-            required : true,
         },
         doctor: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Doctor",
-            required : true,
 
         },
         patient: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Patient",
-            required : true,
         },
         status: {
             type: String,
             enum: ["pending", "cancelled", "completed"],
             default: "pending",
-            required : true,
 
         },
         notes: {

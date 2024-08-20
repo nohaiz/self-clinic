@@ -16,7 +16,6 @@ const userSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
       default: null,
-      required: true,
       validate: {
         validator: function (v) {
           return v == null || mongoose.Types.ObjectId.isValid(v);
@@ -28,7 +27,6 @@ const userSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patient",
       default: null,
-      required: true,
       validate: {
         validator: function (v) {
           return v === null || mongoose.Types.ObjectId.isValid(v);
@@ -40,7 +38,6 @@ const userSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
       default: null,
-      required: true,
       validate: {
         validator: function (v) {
           return v == null || mongoose.Types.ObjectId.isValid(v);
