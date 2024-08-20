@@ -6,6 +6,8 @@ const bcrypt = require("bcrypt");
 // MODELS
 const User = require("../../models/user");
 const Admin = require("../../models/admin");
+const Doctor = require("../../models/doctor");
+const Patient = require("../../models/patient");
 
 // VIEW ALL ADMIN
 
@@ -27,27 +29,79 @@ router.get("/admins", async (req, res) => {
 
 router.post("/admins", async (req, res) => {
   if (req.user.type.hasOwnProperty(2000)) {
-    const { firstName, lastName, contactNumber, CPR, email, password } =
-      req.body;
+
+    let { firstName, lastName, contactNumber, CPR, email, password } = req.body;
     try {
       const userInDatabase = await User.findOne({ email: req.body.email });
-      if (userInDatabase) {
-        return res.status(400).json({ error: "Username already taken" });
+
+      if (req.body.password !== req.body.confirmPassword) {
+        return res
+          .status(400)
+          .json({ error: "Confirm password and password needs to match" });
       }
+
+      let setAccount = false;
+
+      if (userInDatabase) {
+        if (userInDatabase.adminAct) {
+          return res.status(400).json({ error: "Username already taken" });
+        } else {
+
+          setAccount = true;
+          let existingUser;
+
+          if (userInDatabase.docAct) {
+            existingUser = await Doctor.findById(userInDatabase.docAct);
+          }
+          if (
+            existingUser.firstName !== firstName ||
+            existingUser.lastName !== lastName ||
+            existingUser.CPR !== CPR
+          ) {
+            firstName = existingUser.firstName;
+            lastName = existingUser.lastName;
+            CPR = existingUser.CPR;
+
+          } else if (userInDatabase.patientAct) {
+            existingUser = await Patient.findById(userInDatabase.patientAct);
+            if (
+              existingUser.firstName !== firstName ||
+              existingUser.lastName !== lastName ||
+              existingUser.CPR !== CPR
+            ) {
+              firstName = existingUser.firstName;
+              lastName = existingUser.lastName;
+              CPR = existingUser.CPR;
+              }
+            }
+          }
+        }
+        
       const newAdmin = new Admin({ firstName, lastName, contactNumber, CPR });
       await newAdmin.save();
+
       let payLoad = {
         email: email,
         hashedPassword: bcrypt.hashSync(
           password,
           parseInt(process.env.SALT_ROUNDS)
         ),
+        docAct: setAccount ? userInDatabase.docAct : null,
+        patientAct: setAccount ? userInDatabase.patientAct : null,
         adminAct: newAdmin._id,
       };
-      const newUser = new User(payLoad);
-      await newUser.save();
 
-      res.json({ message: "Admin created", admin: newAdmin, user: newUser });
+      let user; 
+
+      if (payLoad.docAct || payLoad.patientAct) {
+        user = await User.findByIdAndUpdate(userInDatabase._id, 
+          {adminAct : payLoad.adminAct}, {new : true});
+      }else {
+        user = await User.create(payLoad);
+        await user.Save();
+      }
+      
+      res.json({ message: "Admin created", admin: newAdmin, user: user });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
