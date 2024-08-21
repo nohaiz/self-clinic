@@ -98,7 +98,6 @@ router.post("/doctors", async (req, res) => {
         );
       } else {
         user = await User.create(payLoad);
-        await user.save();
       }
 
       res.json({ message: "Doctor created", doctor: newDoctor, user: user });

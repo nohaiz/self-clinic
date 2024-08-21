@@ -98,7 +98,6 @@ router.post("/admins", async (req, res) => {
           {adminAct : payLoad.adminAct}, {new : true});
       }else {
         user = await User.create(payLoad);
-        await user.Save();
       }
       
       res.json({ message: "Admin created", admin: newAdmin, user: user });
