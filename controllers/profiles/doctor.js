@@ -27,7 +27,7 @@ router.post("/doctors", async (req, res) => {
   if (req.user.type.hasOwnProperty(2000)) {
 
     let { firstName, lastName, contactNumber, specialization, gender, availability, CPR, email, password, confirmPassword } = req.body;
-    
+
     try {
       const userInDatabase = await User.findOne({ email: req.body.email });
 
@@ -46,33 +46,20 @@ router.post("/doctors", async (req, res) => {
 
           if (userInDatabase.adminAct) {
             existingDoctor = await Admin.findById(userInDatabase.adminAct);
-            console.log(existingDoctor)
-            if (
-              existingDoctor.firstName !== firstName ||
-              existingDoctor.lastName !== lastName ||
-              existingDoctor.CPR !== CPR
-            ) {
-              firstName = existingDoctor.firstName;
-              lastName = existingDoctor.lastName;
-              CPR = existingDoctor.CPR;
-              
-            } else if (userInDatabase.patientAct) {
-                existingUser = await Patient.findById(userInDatabase.patientAct);
-                if (
-                  existingUser.firstName !== firstName ||
-                  existingUser.lastName !== lastName ||
-                  existingUser.CPR !== CPR ||
-                  existingUser.gender !== gender
-                ) {
-                  firstName = existingUser.firstName;
-                  lastName = existingUser.lastName;
-                  CPR = existingUser.CPR;
-                  gender = existingUser.gender
-                  }
-                }
-              }
-            }
+
+            firstName = existingDoctor.firstName;
+            lastName = existingDoctor.lastName;
+            CPR = existingDoctor.CPR;
+
+          } else if (userInDatabase.patientAct) {
+            existingUser = await Patient.findById(userInDatabase.patientAct);
+            firstName = existingUser.firstName;
+            lastName = existingUser.lastName;
+            CPR = existingUser.CPR;
+            gender = existingUser.gender
           }
+        }
+      }
 
       const newDoctor = new Doctor({ firstName, lastName, contactNumber, specialization, gender, availability, CPR });
       await newDoctor.save();
