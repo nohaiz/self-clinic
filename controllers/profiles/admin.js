@@ -52,31 +52,21 @@ router.post("/admins", async (req, res) => {
 
           if (userInDatabase.docAct) {
             existingUser = await Doctor.findById(userInDatabase.docAct);
-          }
-          if (
-            existingUser.firstName !== firstName ||
-            existingUser.lastName !== lastName ||
-            existingUser.CPR !== CPR
-          ) {
+
             firstName = existingUser.firstName;
             lastName = existingUser.lastName;
             CPR = existingUser.CPR;
 
           } else if (userInDatabase.patientAct) {
             existingUser = await Patient.findById(userInDatabase.patientAct);
-            if (
-              existingUser.firstName !== firstName ||
-              existingUser.lastName !== lastName ||
-              existingUser.CPR !== CPR
-            ) {
-              firstName = existingUser.firstName;
-              lastName = existingUser.lastName;
-              CPR = existingUser.CPR;
-              }
-            }
+            firstName = existingUser.firstName;
+            lastName = existingUser.lastName;
+            CPR = existingUser.CPR;
           }
         }
-        
+      }
+
+
       const newAdmin = new Admin({ firstName, lastName, contactNumber, CPR });
       await newAdmin.save();
 
@@ -91,15 +81,15 @@ router.post("/admins", async (req, res) => {
         adminAct: newAdmin._id,
       };
 
-      let user; 
+      let user;
 
       if (payLoad.docAct || payLoad.patientAct) {
-        user = await User.findByIdAndUpdate(userInDatabase._id, 
-          {adminAct : payLoad.adminAct}, {new : true});
-      }else {
+        user = await User.findByIdAndUpdate(userInDatabase._id,
+          { adminAct: payLoad.adminAct }, { new: true });
+      } else {
         user = await User.create(payLoad);
       }
-      
+
       res.json({ message: "Admin created", admin: newAdmin, user: user });
     } catch (error) {
       res.status(400).json({ error: error.message });
